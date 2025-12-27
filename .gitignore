@@ -1,0 +1,67 @@
+# Adaptive Firewall AI - .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Models and Training Outputs
+model/*.zip
+model/checkpoints/
+model/logs/
+model/tensorboard/
+model/*.png
+model/*.txt
+
+# Data
+data/*.csv
+data/*.json
+data/*.pcap
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# PyTorch
+*.pth
+*.pt
+
+# Keep directory structure
+!model/.gitkeep
+!data/traffic.csv
