@@ -38,35 +38,180 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# Custom CSS - Futuristic Dark Theme
 st.markdown("""
 <style>
+    /* Main theme */
+    .stApp {
+        background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1419 100%);
+    }
+    
+    /* Headers with neon glow */
     .big-font {
-        font-size:30px !important;
-        font-weight: bold;
+        font-size: 36px !important;
+        font-weight: 900;
+        background: linear-gradient(90deg, #00f5ff 0%, #00ff88 50%, #00f5ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 30px rgba(0, 245, 255, 0.5);
+        letter-spacing: 2px;
+        font-family: 'Orbitron', 'Courier New', monospace;
     }
+    
+    /* Metric cards with glassmorphism */
     .metric-card {
-        background-color: #f0f2f6;
+        background: rgba(13, 27, 42, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 245, 255, 0.2);
         padding: 20px;
-        border-radius: 10px;
+        border-radius: 15px;
         margin: 10px 0;
+        box-shadow: 0 8px 32px 0 rgba(0, 245, 255, 0.1);
     }
+    
+    /* Alert boxes with neon borders */
     .alert-box {
         padding: 15px;
-        border-radius: 5px;
+        border-radius: 10px;
         margin: 10px 0;
+        border-left: 4px solid;
+        backdrop-filter: blur(10px);
+        font-family: 'Roboto Mono', monospace;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
+    
     .alert-danger {
-        background-color: #ff4b4b;
-        color: white;
+        background: rgba(255, 0, 80, 0.15);
+        border-color: #ff0050;
+        color: #ff4d88;
+        box-shadow: 0 0 20px rgba(255, 0, 80, 0.3);
     }
+    
     .alert-success {
-        background-color: #00cc00;
-        color: white;
+        background: rgba(0, 255, 136, 0.15);
+        border-color: #00ff88;
+        color: #00ff88;
+        box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
     }
+    
     .alert-warning {
-        background-color: #ffaa00;
-        color: white;
+        background: rgba(255, 170, 0, 0.15);
+        border-color: #ffaa00;
+        color: #ffcc66;
+        box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
+    }
+    
+    /* Cyberpunk text effects */
+    h1, h2, h3 {
+        color: #00f5ff !important;
+        text-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+        font-family: 'Orbitron', sans-serif;
+        letter-spacing: 1px;
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0d1b2a 0%, #1b263b 100%);
+        border-right: 2px solid rgba(0, 245, 255, 0.3);
+    }
+    
+    /* Buttons with neon effect */
+    .stButton>button {
+        background: linear-gradient(90deg, #00f5ff 0%, #00ff88 100%);
+        color: #0a0e27;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 24px;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 20px rgba(0, 245, 255, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .stButton>button:hover {
+        box-shadow: 0 0 30px rgba(0, 245, 255, 0.8);
+        transform: translateY(-2px);
+    }
+    
+    /* Metrics with glow */
+    [data-testid="stMetricValue"] {
+        color: #00ff88;
+        font-size: 28px;
+        font-weight: bold;
+        text-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+    }
+    
+    /* Tables */
+    .stDataFrame {
+        background: rgba(13, 27, 42, 0.6);
+        border: 1px solid rgba(0, 245, 255, 0.2);
+        border-radius: 10px;
+    }
+    
+    /* Progress bars */
+    .stProgress > div > div {
+        background: linear-gradient(90deg, #00f5ff 0%, #00ff88 100%);
+        box-shadow: 0 0 15px rgba(0, 245, 255, 0.6);
+    }
+    
+    /* Select boxes and inputs */
+    .stSelectbox, .stTextInput {
+        background: rgba(13, 27, 42, 0.6);
+        border: 1px solid rgba(0, 245, 255, 0.3);
+        border-radius: 8px;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background: rgba(13, 27, 42, 0.4);
+        border-radius: 10px;
+        padding: 5px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background: rgba(0, 245, 255, 0.1);
+        border-radius: 8px;
+        color: #00f5ff;
+        font-weight: bold;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(90deg, #00f5ff 0%, #00ff88 100%);
+        color: #0a0e27;
+        box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(13, 27, 42, 0.4);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #00f5ff 0%, #00ff88 100%);
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 245, 255, 0.5);
+    }
+    
+    /* Animations */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+    
+    @keyframes glow {
+        0%, 100% { text-shadow: 0 0 10px rgba(0, 245, 255, 0.5); }
+        50% { text-shadow: 0 0 20px rgba(0, 245, 255, 0.8), 0 0 30px rgba(0, 245, 255, 0.6); }
+    }
+    
+    .big-font {
+        animation: glow 2s ease-in-out infinite;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -174,17 +319,19 @@ def main():
     """Main dashboard function."""
     
     # Header
-    st.markdown('<p class="big-font">🛡️ Adaptive Firewall AI Dashboard</p>', unsafe_allow_html=True)
-    st.markdown("Real-time network traffic monitoring and AI-powered threat detection")
+    st.markdown('<p class="big-font">🛡️ ADAPTIVE FIREWALL AI</p>', unsafe_allow_html=True)
+    st.markdown("🔮 **Neural Network Defense System** • Real-time Threat Detection • AI-Powered Security")
+    st.markdown("---")
     
     # Sidebar
     with st.sidebar:
-        st.header("⚙️ Controls")
+        st.markdown("### ⚡ NEURAL CONTROL CENTER")
+        st.markdown("---")
         
         # Model selection
         model_options = {
-            "Enhanced Model (98.2%)": "model/firewall_dqn_enhanced.zip",
-            "Original Model (100%)": "model/firewall_dqn.zip"
+            "🧠 Enhanced Neural Net (98.2%)": "model/firewall_dqn_enhanced.zip",
+            "🔧 Original Model (100%)": "model/firewall_dqn.zip"
         }
         selected_model = st.selectbox("Select Model", list(model_options.keys()))
         
@@ -199,34 +346,34 @@ def main():
         st.markdown("---")
         
         # Mode selection
-        st.header("🎯 Firewall Mode")
+        st.markdown("### 🎯 DEFENSE MODE")
         mode = st.radio(
             "Operation Mode",
-            ["Observe", "Active"],
+            ["👁️ OBSERVE", "⚔️ ACTIVE"],
             help="Observe: Monitor only, Active: Block threats"
         )
         
-        if mode == "Active":
-            st.warning("⚠️ Active mode: Threats will be blocked")
+        if mode == "⚔️ ACTIVE":
+            st.warning("⚠️ ACTIVE DEFENSE MODE ENABLED")
         else:
-            st.info("👁️ Observe mode: Monitoring only")
+            st.info("👁️ PASSIVE MONITORING ACTIVE")
         
         st.markdown("---")
         
         # Statistics
-        st.header("📊 Statistics")
-        st.metric("Total Packets", st.session_state.stats['total_packets'])
-        st.metric("Allowed", st.session_state.stats['allowed'], 
+        st.markdown("### 📊 SYSTEM METRICS")
+        st.metric("⚡ PACKETS ANALYZED", st.session_state.stats['total_packets'])
+        st.metric("✅ ALLOWED", st.session_state.stats['allowed'], 
                  delta=f"{st.session_state.stats['allowed']/max(st.session_state.stats['total_packets'], 1)*100:.1f}%")
-        st.metric("Blocked", st.session_state.stats['blocked'],
+        st.metric("🛡️ BLOCKED", st.session_state.stats['blocked'],
                  delta=f"{st.session_state.stats['blocked']/max(st.session_state.stats['total_packets'], 1)*100:.1f}%")
-        st.metric("Threats Detected", st.session_state.stats['threats_detected'])
+        st.metric("🚨 THREATS DETECTED", st.session_state.stats['threats_detected'])
         
         st.markdown("---")
         
         # Controls
-        st.header("🎮 Actions")
-        if st.button("🗑️ Clear Logs"):
+        st.markdown("### 🎮 SYSTEM CONTROLS")
+        if st.button("🗑️ PURGE LOGS"):
             st.session_state.traffic_log = []
             st.session_state.alerts = []
             st.session_state.stats = {
@@ -235,60 +382,65 @@ def main():
                 'blocked': 0,
                 'threats_detected': 0
             }
-            st.success("Logs cleared!")
+            st.success("✅ System logs purged!")
         
-        if st.button("📥 Export Report"):
+        if st.button("📥 EXPORT TELEMETRY"):
             if st.session_state.traffic_log:
                 df = pd.DataFrame(st.session_state.traffic_log)
                 csv = df.to_csv(index=False)
                 st.download_button(
-                    label="Download CSV",
+                    label="⬇️ DOWNLOAD DATA",
                     data=csv,
-                    file_name=f"firewall_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    file_name=f"firewall_telemetry_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv"
                 )
     
     # Main content
     if not st.session_state.model_loaded:
-        st.warning("⚠️ Please load a model from the sidebar to begin monitoring")
+        st.warning("⚠️ NEURAL NETWORK NOT LOADED • Initialize AI system from control panel")
         
         # Show model info
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("🎓 Enhanced Model")
+            st.markdown("### 🧠 ENHANCED NEURAL NETWORK")
             st.markdown("""
-            - **Accuracy:** 98.2%
-            - **Features:** 7 advanced features
-            - **Dataset:** 5,000 samples
-            - **Status:** Production Ready ✅
+            - **Accuracy:** `98.2%`
+            - **Features:** `7 Advanced Vectors`
+            - **Dataset:** `5,000 Samples`
+            - **Status:** `PRODUCTION READY` ✅
             """)
         
         with col2:
-            st.subheader("📚 Original Model")
+            st.markdown("### 🔧 LEGACY MODEL")
             st.markdown("""
-            - **Accuracy:** 100% (may overfit)
-            - **Features:** 3 basic features
-            - **Dataset:** 100 samples
-            - **Status:** Demo Version
+            - **Accuracy:** `100%` (May overfit)
+            - **Features:** `3 Basic Vectors`
+            - **Dataset:** `100 Samples`
+            - **Status:** `DEMO VERSION`
             """)
         
         return
     
     # Tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["📡 Live Monitor", "📈 Analytics", "🔍 Model Info", "⚙️ Settings"])
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "📡 NEURAL SCANNER", 
+        "📈 THREAT ANALYTICS", 
+        "🔍 SYSTEM INFO", 
+        "⚙️ CONFIGURATION"
+    ])
     
     with tab1:
         # Live monitoring
-        st.header("Real-Time Traffic Monitor")
+        st.markdown("## 🔴 REAL-TIME THREAT SCANNER")
         
         # Start/Stop monitoring
         col1, col2 = st.columns([3, 1])
         with col1:
             monitor_status = st.empty()
         with col2:
-            if st.button("▶️ Start Demo"):
-                monitor_status.success("🟢 Monitoring Active")
+            if st.button("▶️ INITIATE SCAN"):
+                monitor_status.success("🟢 NEURAL SCANNER ONLINE")
                 
                 # Demo loop
                 progress_bar = st.progress(0)
@@ -351,10 +503,10 @@ def main():
                     # Update displays
                     with metrics_placeholder.container():
                         col1, col2, col3, col4 = st.columns(4)
-                        col1.metric("Total", st.session_state.stats['total_packets'])
-                        col2.metric("Allowed", st.session_state.stats['allowed'])
-                        col3.metric("Blocked", st.session_state.stats['blocked'])
-                        col4.metric("Threats", st.session_state.stats['threats_detected'])
+                        col1.metric("⚡ TOTAL", st.session_state.stats['total_packets'])
+                        col2.metric("✅ SAFE", st.session_state.stats['allowed'])
+                        col3.metric("🛡️ BLOCKED", st.session_state.stats['blocked'])
+                        col4.metric("🚨 THREATS", st.session_state.stats['threats_detected'])
                     
                     # Traffic chart
                     if len(st.session_state.traffic_log) > 1:
@@ -369,31 +521,31 @@ def main():
                     
                     # Recent traffic table
                     with table_placeholder.container():
-                        st.subheader("Recent Packets")
+                        st.markdown("### 📊 RECENT NETWORK ACTIVITY")
                         df_display = pd.DataFrame(st.session_state.traffic_log[:10])
                         st.dataframe(df_display, use_container_width=True, hide_index=True)
                     
                     # Alerts
                     if st.session_state.alerts:
                         with alerts_placeholder.container():
-                            st.subheader("🚨 Recent Alerts")
+                            st.markdown("### 🚨 SECURITY ALERTS")
                             for alert in st.session_state.alerts[:5]:
                                 severity_color = "danger" if alert['severity'] == 'HIGH' else "warning"
                                 st.markdown(
                                     f'<div class="alert-box alert-{severity_color}">'
-                                    f'<strong>{alert["time"]}</strong> - {alert["message"]}'
+                                    f'<strong>⏰ {alert["time"]}</strong> → {alert["message"]}'
                                     f'</div>',
                                     unsafe_allow_html=True
                                 )
                     
                     # Update progress
                     progress_bar.progress((i + 1) / 50)
-                    status_text.text(f"Processing packet {i+1}/50 - {color} {decision}: {traffic_type}")
+                    status_text.text(f"⚡ ANALYZING PACKET {i+1}/50 → {color} {decision}: {traffic_type}")
                     
                     time.sleep(0.3)
                 
-                status_text.text("✅ Demo completed!")
-                monitor_status.info("⏸️ Monitoring Paused")
+                status_text.text("✅ SCAN COMPLETE • All threats neutralized")
+                monitor_status.info("⏸️ SCANNER STANDBY")
     
     with tab2:
         # Analytics
