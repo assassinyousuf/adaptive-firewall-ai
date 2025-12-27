@@ -1,0 +1,105 @@
+# Adaptive Firewall AI Configuration
+# Modify these settings to tune the system
+
+# Dataset Configuration
+dataset:
+  filepath: "data/traffic_enhanced.csv"
+  n_samples: 5000
+  train_ratio: 0.8
+  val_ratio: 0.1
+  test_ratio: 0.1
+
+# Model Configuration
+model:
+  algorithm: "DQN"  # Options: DQN, PPO
+  policy: "MlpPolicy"
+  
+  # DQN Hyperparameters
+  dqn:
+    learning_rate: 0.0003
+    buffer_size: 100000
+    learning_starts: 1000
+    batch_size: 64
+    tau: 0.005
+    gamma: 0.99
+    train_freq: 4
+    gradient_steps: 1
+    target_update_interval: 1000
+    exploration_fraction: 0.2
+    exploration_initial_eps: 1.0
+    exploration_final_eps: 0.02
+    net_arch: [128, 128]  # Neural network architecture
+  
+  # PPO Hyperparameters (alternative)
+  ppo:
+    learning_rate: 0.0003
+    n_steps: 2048
+    batch_size: 64
+    n_epochs: 10
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_range: 0.2
+    ent_coef: 0.01
+    net_arch: [128, 128]
+
+# Training Configuration
+training:
+  total_timesteps: 100000
+  eval_freq: 5000
+  checkpoint_freq: 10000
+  save_path: "model/firewall_dqn_enhanced"
+  tensorboard_log: "model/tensorboard"
+  early_stopping:
+    enabled: true
+    max_no_improvement: 10
+    min_evals: 5
+
+# Feature Configuration
+features:
+  count: 7
+  names:
+    - "packet_size"
+    - "protocol"
+    - "packet_rate"
+    - "entropy"
+    - "size_variance"
+    - "inter_arrival_time"
+    - "flags"
+  
+  # Normalization bounds
+  max_values:
+    packet_size: 2000
+    protocol: 2
+    packet_rate: 100
+    entropy: 8.0
+    size_variance: 10000
+    inter_arrival_time: 1.0
+    flags: 255
+
+# Reward Configuration
+rewards:
+  correct_allow: 5.0
+  correct_block: 5.0
+  false_positive: -3.0  # Block benign traffic
+  false_negative: -10.0  # Allow malicious traffic
+
+# Deployment Configuration
+deployment:
+  observe_only: true  # Set to false to enable real blocking
+  packet_count: 100   # Number of packets to process (0 = unlimited)
+  confidence_threshold: 0.7  # Minimum confidence for blocking
+  whitelist:
+    enabled: false
+    ips: []
+
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  save_logs: true
+  log_dir: "model/logs"
+
+# Performance Configuration
+performance:
+  use_gpu: false
+  n_envs: 1  # Number of parallel environments
+  optimize_memory: true

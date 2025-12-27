@@ -28,8 +28,9 @@ class FirewallEnv(gym.Env):
         Initialize the Firewall Environment.
         
         Args:
-            dataset: Numpy array of shape (N, 4) where columns are:
-                     [packet_size, protocol, packet_rate, label]
+            dataset: Numpy array of shape (N, 8) where columns are:
+                     [packet_size, protocol, packet_rate, entropy,
+                      size_variance, inter_arrival_time, flags, label]
             render_mode: Optional rendering mode
         """
         super(FirewallEnv, self).__init__()
@@ -38,11 +39,11 @@ class FirewallEnv(gym.Env):
         self.current_index = 0
         self.render_mode = render_mode
         
-        # Observation space: 3 continuous features
+        # Observation space: 7 continuous features (all except label)
         self.observation_space = spaces.Box(
             low=0, 
             high=2000, 
-            shape=(3,), 
+            shape=(7,), 
             dtype=np.float32
         )
         
@@ -68,8 +69,8 @@ class FirewallEnv(gym.Env):
         self.episode_rewards = []
         self.decisions = []
         
-        # Get initial state (first 3 columns)
-        observation = self.dataset[self.current_index][:3].astype(np.float32)
+        # Get initial state (first 7 columns - all except label)
+        observation = self.dataset[self.current_index][:7].astype(np.float32)
         info = {}
         
         return observation, info
@@ -89,7 +90,7 @@ class FirewallEnv(gym.Env):
             info: Additional information
         """
         # Get ground truth label
-        label = int(self.dataset[self.current_index][3])
+        label = int(self.dataset[self.current_index][-1])  # Last column is label
         
         # Calculate reward
         reward = calculate_reward(action, label)
@@ -103,11 +104,11 @@ class FirewallEnv(gym.Env):
         terminated = self.current_index >= len(self.dataset)
         truncated = False
         
-        # Get next observation
+        # Get next observation (first 7 columns)
         if not terminated:
-            observation = self.dataset[self.current_index][:3].astype(np.float32)
+            observation = self.dataset[self.current_index][:7].astype(np.float32)
         else:
-            observation = np.zeros(3, dtype=np.float32)
+            observation = np.zeros(7, dtype=np.float32)
         
         # Info dictionary
         info = {
@@ -145,7 +146,7 @@ class FirewallEnvV2(gym.Env):
         self.observation_space = spaces.Box(
             low=0, 
             high=2000, 
-            shape=(3,), 
+            shape=(7,),  # Updated to 7 features
             dtype=np.float32
         )
         self.action_space = spaces.Discrete(2)
@@ -177,19 +178,41 @@ class FirewallEnvV2(gym.Env):
         return observation, reward, terminated, truncated, info
     
     def _generate_traffic(self):
-        """Generate synthetic traffic data."""
+        """Generate synthetic traffic data with 7 features."""
         packet_size = np.random.randint(64, 1500)
         protocol = np.random.randint(0, 3)
         packet_rate = np.random.randint(1, 100)
+        entropy = np.random.uniform(0, 8)
+        size_variance = np.random.uniform(0, 1000)
+        inter_arrival_time = np.random.uniform(0, 1)
+        flags = np.random.randint(0, 25)
         
-        return np.array([packet_size, protocol, packet_rate], dtype=np.float32)
+        return np.array([
+            packet_size, protocol, packet_rate, entropy,
+            size_variance, inter_arrival_time, flags
+        ], dtype=np.float32)
     
     def _simulate_label(self, observation):
-        """Simulate whether traffic is malicious (simple heuristic)."""
-        packet_size, protocol, packet_rate = observation
+        """Simulate whether traffic is malicious (enhanced heuristic)."""
+        packet_size, protocol, packet_rate, entropy, size_variance, inter_arrival_time, flags = observation
         
-        # Simple rule: high rate + large packets = likely malicious
+        # More sophisticated rules
+        score = 0
+        
+        # High rate + large packets = suspicious
         if packet_rate > 70 and packet_size > 1000:
-            return 1  # Malicious
+            score += 2
         
-        return 0  # Benign
+        # Low entropy (repetitive) + high rate = likely flood attack
+        if entropy < 3.0 and packet_rate > 60:
+            score += 2
+        
+        # Very fast arrival + high rate = DDoS
+        if inter_arrival_time < 0.01 and packet_rate > 80:
+            score += 2
+        
+        # SYN flood pattern
+        if flags == 2 and packet_rate > 50:
+            score += 1
+        
+        return 1 if score >= 2 else 0  # Malicious if score >= 2
