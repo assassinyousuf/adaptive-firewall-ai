@@ -235,6 +235,10 @@ if 'model' not in st.session_state:
     st.session_state.model = None
 if 'num_features' not in st.session_state:
     st.session_state.num_features = 7  # Default to enhanced model
+if 'show_help' not in st.session_state:
+    st.session_state.show_help = False
+if 'first_visit' not in st.session_state:
+    st.session_state.first_visit = True
 
 
 def load_model(model_path):
@@ -353,47 +357,88 @@ def main():
             "🧠 Enhanced Neural Net (98.2%)": "model/firewall_dqn_enhanced.zip",
             "🔧 Original Model (100%)": "model/firewall_dqn.zip"
         }
-        selected_model = st.selectbox("Select Model", list(model_options.keys()))
+        selected_model = st.selectbox(
+            "Select AI Model", 
+            list(model_options.keys()),
+            help="Enhanced model recommended for production use. Original model for testing only."
+        )
+        
+        # Show model recommendation
+        if "Enhanced" in selected_model:
+            st.info("💡 **Recommended**: This model is trained on 5,000 samples with advanced features.")
+        else:
+            st.warning("⚠️ Demo model may overfit. Use Enhanced model for real deployment.")
         
         if st.button("🔄 Load Model"):
-            with st.spinner("Loading model..."):
+            with st.spinner("Loading neural network... Please wait."):
                 model, error = load_model(model_options[selected_model])
                 if error:
-                    st.error(f"❌ Error: {error}")
+                    st.error(f"❌ Error loading model: {error}")
+                    st.info("💡 **Solution**: Make sure model files exist in the 'model/' directory.")
                 else:
-                    st.success("✅ Model loaded successfully!")
+                    st.success("✅ Model loaded successfully! You can now start scanning.")
+                    st.balloons()
         
         st.markdown("---")
         
         # Mode selection
         st.markdown("### 🎯 DEFENSE MODE")
+        st.caption("Choose how the firewall should respond to threats")
         mode = st.radio(
             "Operation Mode",
             ["👁️ OBSERVE", "⚔️ ACTIVE"],
-            help="Observe: Monitor only, Active: Block threats"
+            help="OBSERVE: AI analyzes traffic but doesn't block anything (safe for learning). ACTIVE: AI actively blocks detected threats (requires admin privileges)."
         )
         
         if mode == "⚔️ ACTIVE":
-            st.warning("⚠️ ACTIVE DEFENSE MODE ENABLED")
+            st.warning("⚠️ ACTIVE DEFENSE: AI will block threats")
+            st.caption("⚡ Admin privileges required for real blocking")
         else:
-            st.info("👁️ PASSIVE MONITORING ACTIVE")
+            st.info("👁️ OBSERVE MODE: Monitoring traffic only")
+            st.caption("✅ Safe mode - no packets will be blocked")
         
         st.markdown("---")
         
         # Statistics
         st.markdown("### 📊 SYSTEM METRICS")
-        st.metric("⚡ PACKETS ANALYZED", st.session_state.stats['total_packets'])
-        st.metric("✅ ALLOWED", st.session_state.stats['allowed'], 
-                 delta=f"{st.session_state.stats['allowed']/max(st.session_state.stats['total_packets'], 1)*100:.1f}%")
-        st.metric("🛡️ BLOCKED", st.session_state.stats['blocked'],
-                 delta=f"{st.session_state.stats['blocked']/max(st.session_state.stats['total_packets'], 1)*100:.1f}%")
-        st.metric("🚨 THREATS DETECTED", st.session_state.stats['threats_detected'])
+        st.caption("Real-time statistics from AI analysis")
+        st.metric(
+            "⚡ PACKETS ANALYZED", 
+            st.session_state.stats['total_packets'],
+            help="Total number of network packets processed by AI"
+        )
+        st.metric(
+            "✅ ALLOWED", 
+            st.session_state.stats['allowed'], 
+            delta=f"{st.session_state.stats['allowed']/max(st.session_state.stats['total_packets'], 1)*100:.1f}%",
+            help="Packets identified as safe and allowed through"
+        )
+        st.metric(
+            "🛡️ BLOCKED", 
+            st.session_state.stats['blocked'],
+            delta=f"{st.session_state.stats['blocked']/max(st.session_state.stats['total_packets'], 1)*100:.1f}%",
+            help="Packets identified as threats and blocked"
+        )
+        st.metric(
+            "🚨 THREATS DETECTED", 
+            st.session_state.stats['threats_detected'],
+            help="Total malicious traffic detected by AI"
+        )
         
         st.markdown("---")
         
         # Controls
         st.markdown("### 🎮 SYSTEM CONTROLS")
-        if st.button("🗑️ PURGE LOGS"):
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("❓ HELP", use_container_width=True):
+                st.session_state.show_help = not st.session_state.show_help
+        with col2:
+            if st.button("🔄 RESET", use_container_width=True, help="Reset all data and statistics"):
+                st.session_state.first_visit = True
+        
+        if st.button("🗑️ PURGE LOGS", help="Clear all logs and statistics"):
             st.session_state.traffic_log = []
             st.session_state.alerts = []
             st.session_state.stats = {
@@ -404,7 +449,7 @@ def main():
             }
             st.success("✅ System logs purged!")
         
-        if st.button("📥 EXPORT TELEMETRY"):
+        if st.button("📥 EXPORT TELEMETRY", help="Download traffic logs as CSV file"):
             if st.session_state.traffic_log:
                 df = pd.DataFrame(st.session_state.traffic_log)
                 csv = df.to_csv(index=False)
@@ -414,31 +459,139 @@ def main():
                     file_name=f"firewall_telemetry_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
                     mime="text/csv"
                 )
+            else:
+                st.warning("⚠️ No data to export. Run a scan first!")
     
     # Main content
-    if not st.session_state.model_loaded:
-        st.warning("⚠️ NEURAL NETWORK NOT LOADED • Initialize AI system from control panel")
+    
+    # First-time user guide
+    if st.session_state.first_visit and not st.session_state.model_loaded:
+        st.success("👋 **Welcome to Adaptive Firewall AI!**")
         
-        # Show model info
+        with st.expander("📖 **QUICK START GUIDE** - Click here to learn how to use this dashboard", expanded=True):
+            st.markdown("""
+            ### 🚀 Getting Started in 3 Easy Steps:
+            
+            **STEP 1: Load AI Model** (Left Sidebar)
+            - Choose a model from the dropdown
+            - Click "🔄 Load Model" button
+            - Wait for confirmation message
+            
+            **STEP 2: Choose Defense Mode** (Left Sidebar)
+            - **👁️ OBSERVE** = Safe mode, AI just watches (Recommended for first use)
+            - **⚔️ ACTIVE** = AI blocks threats (Needs admin privileges)
+            
+            **STEP 3: Start Scanning** (Main Panel)
+            - Go to "📡 NEURAL SCANNER" tab
+            - Click "▶️ INITIATE SCAN" button
+            - Watch AI analyze traffic in real-time!
+            
+            ---
+            
+            ### 💡 What Each Tab Does:
+            
+            - **📡 NEURAL SCANNER**: Watch AI analyze network traffic in real-time
+            - **📈 THREAT ANALYTICS**: See charts and statistics about detected threats
+            - **🔍 SYSTEM INFO**: Learn about the AI model and features
+            - **⚙️ CONFIGURATION**: Adjust settings and preferences
+            
+            ---
+            
+            ### ❓ Need Help?
+            - Click the **❓ HELP** button in the sidebar anytime
+            - All options have tooltips - hover over (?) icons
+            - Check "🔍 SYSTEM INFO" tab for detailed information
+            
+            ---
+            
+            *Click anywhere outside this box to close this guide*
+            """)
+            
+            if st.button("✅ Got it! Don't show this again"):
+                st.session_state.first_visit = False
+                st.rerun()
+    
+    # Help panel
+    if st.session_state.show_help:
+        with st.expander("❓ **HELP & FAQ**", expanded=True):
+            st.markdown("""
+            ### 🤔 Frequently Asked Questions:
+            
+            **Q: Which model should I use?**
+            A: Use the **Enhanced Neural Net (98.2%)** for best results. It's trained on 5,000 samples.
+            
+            **Q: What's the difference between OBSERVE and ACTIVE mode?**
+            A: 
+            - **OBSERVE**: AI analyzes traffic but doesn't block anything (safe for testing)
+            - **ACTIVE**: AI actively blocks threats (requires admin/sudo privileges)
+            
+            **Q: How do I see live traffic?**
+            A: Load a model, then go to "📡 NEURAL SCANNER" tab and click "▶️ INITIATE SCAN"
+            
+            **Q: Is this analyzing real network traffic?**
+            A: The demo generates simulated traffic. For real traffic, you need admin privileges and the runtime module.
+            
+            **Q: What do the colors mean?**
+            A:
+            - 🟢 Green = Safe traffic (ALLOWED)
+            - 🔴 Red = Threat detected (BLOCKED)
+            - 🟡 Yellow = Warning or info
+            
+            **Q: How accurate is the AI?**
+            A: The Enhanced model has 98.2% accuracy on test data with very low false positives.
+            
+            **Q: Can I export the data?**
+            A: Yes! Click "📥 EXPORT TELEMETRY" in the sidebar after running scans.
+            """)
+            
+            if st.button("❌ Close Help"):
+                st.session_state.show_help = False
+                st.rerun()
+    
+    if not st.session_state.model_loaded:
+        st.warning("⚠️ **ACTION REQUIRED**: Load an AI model from the sidebar to begin")
+        st.info("👈 Look at the left sidebar and click '🔄 Load Model' to get started!")
+        
+        # Show model comparison
+        st.markdown("## 🤖 Available AI Models")
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("### 🧠 ENHANCED NEURAL NETWORK")
-            st.markdown("""
-            - **Accuracy:** `98.2%`
+            st.markdown("### 🧠 Enhanced Neural Network")
+            st.markdown("""            - **Accuracy:** `98.2%`
             - **Features:** `7 Advanced Vectors`
             - **Dataset:** `5,000 Samples`
             - **Status:** `PRODUCTION READY` ✅
+            
+            **Best for:** Production use, real deployment
+            
+            **What it analyzes:**
+            - Packet size & protocol
+            - Traffic rate & patterns
+            - Data entropy (randomness)
+            - Timing anomalies
+            - TCP flags & more
             """)
         
         with col2:
-            st.markdown("### 🔧 LEGACY MODEL")
-            st.markdown("""
-            - **Accuracy:** `100%` (May overfit)
+            st.markdown("### 🔧 Original Model")
+            st.markdown("""            - **Accuracy:** `100%` (May overfit)
             - **Features:** `3 Basic Vectors`
             - **Dataset:** `100 Samples`
             - **Status:** `DEMO VERSION`
+            
+            **Best for:** Testing, demonstrations
+            
+            **What it analyzes:**
+            - Packet size
+            - Protocol type
+            - Traffic rate
+            
+            ⚠️ Small dataset may not generalize well
             """)
+        
+        st.markdown("---")
+        st.info("💡 **Recommendation**: Start with the Enhanced Neural Net model for best results!")
         
         return
     
@@ -453,18 +606,31 @@ def main():
     with tab1:
         # Live monitoring
         st.markdown("## 🔴 REAL-TIME THREAT SCANNER")
+        st.caption("Watch the AI analyze network traffic and detect threats in real-time")
+        
+        # Instructions
+        st.info("""            **How it works:** 
+            1. Click the '▶️ INITIATE SCAN' button below
+            2. AI will analyze 50 simulated network packets
+            3. Watch real-time decisions: 🟢 ALLOW or 🔴 BLOCK
+            4. See live charts, statistics, and security alerts
+            
+            💡 The scan takes about 15 seconds to complete
+            """)
         
         # Start/Stop monitoring
         col1, col2 = st.columns([3, 1])
         with col1:
             monitor_status = st.empty()
         with col2:
-            if st.button("▶️ INITIATE SCAN"):
-                monitor_status.success("🟢 NEURAL SCANNER ONLINE")
+            if st.button("▶️ INITIATE SCAN", help="Start analyzing network traffic"):
+                monitor_status.success("🟢 NEURAL SCANNER ONLINE - AI is now analyzing traffic...")
                 
                 # Demo loop
+                st.markdown("### 📊 Live Analysis Dashboard")
                 progress_bar = st.progress(0)
                 status_text = st.empty()
+                status_text.info("⚡ Initializing AI neural network...")
                 
                 # Create placeholders
                 metrics_placeholder = st.empty()
@@ -569,10 +735,23 @@ def main():
     
     with tab2:
         # Analytics
-        st.header("Traffic Analytics")
+        st.header("📈 Threat Analytics Dashboard")
+        st.caption("Visualize patterns, statistics, and performance metrics")
         
         if not st.session_state.traffic_log:
-            st.info("No data yet. Start monitoring to see analytics.")
+            st.info("📊 **No data available yet**")
+            st.markdown("""
+            To see analytics:
+            1. Go to the **📡 NEURAL SCANNER** tab
+            2. Click **▶️ INITIATE SCAN** to generate data
+            3. Come back here to see charts and statistics
+            
+            Analytics will show:
+            - Traffic patterns and distributions
+            - Threat detection accuracy
+            - Protocol and traffic type breakdowns
+            - Performance metrics (precision, recall, etc.)
+            """)
         else:
             df = pd.DataFrame(st.session_state.traffic_log)
             
