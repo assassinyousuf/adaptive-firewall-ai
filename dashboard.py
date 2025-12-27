@@ -111,10 +111,16 @@ def predict_packet(features):
     action, _ = st.session_state.model.predict(obs, deterministic=True)
     
     # Get Q-values for confidence
-    q_values = st.session_state.model.q_net(
-        st.session_state.model.policy.obs_to_tensor(obs)[0]
-    )
-    confidence = float(q_values[0, action].detach().numpy())
+    try:
+        q_values = st.session_state.model.q_net(
+            st.session_state.model.policy.obs_to_tensor(obs)[0]
+        )
+        # Convert action to int if it's an array
+        action_idx = int(action.item() if hasattr(action, 'item') else action)
+        confidence = float(q_values[0, action_idx].detach().numpy())
+    except Exception:
+        # Fallback to simple confidence
+        confidence = abs(float(action)) + 1.0
     
     return int(action), confidence
 
