@@ -233,6 +233,8 @@ if 'model_loaded' not in st.session_state:
     st.session_state.model_loaded = False
 if 'model' not in st.session_state:
     st.session_state.model = None
+if 'num_features' not in st.session_state:
+    st.session_state.num_features = 7  # Default to enhanced model
 
 
 def load_model(model_path):
@@ -241,6 +243,11 @@ def load_model(model_path):
         model = DQN.load(model_path)
         st.session_state.model = model
         st.session_state.model_loaded = True
+        
+        # Detect number of features from model
+        obs_shape = model.observation_space.shape[0]
+        st.session_state.num_features = obs_shape
+        
         return model, None
     except Exception as e:
         return None, str(e)
@@ -251,23 +258,36 @@ def predict_packet(features):
     if not st.session_state.model_loaded or st.session_state.model is None:
         return 0, 0.5
     
+    # Get expected number of features from model
+    expected_features = st.session_state.num_features
+    
+    # Adapt features to model requirements
+    if len(features) > expected_features:
+        # Truncate to first N features (size, protocol, rate for 3-feature models)
+        features = features[:expected_features]
+    elif len(features) < expected_features:
+        # Pad with zeros if needed
+        features = features + [0] * (expected_features - len(features))
+    
     # Reshape features for prediction
-    obs = np.array(features).reshape(1, -1)
-    action, _ = st.session_state.model.predict(obs, deterministic=True)
+    obs = np.array(features, dtype=np.float32)
     
-    # Get Q-values for confidence
     try:
-        q_values = st.session_state.model.q_net(
-            st.session_state.model.policy.obs_to_tensor(obs)[0]
-        )
-        # Convert action to int if it's an array
-        action_idx = int(action.item() if hasattr(action, 'item') else action)
-        confidence = float(q_values[0, action_idx].detach().numpy())
-    except Exception:
-        # Fallback to simple confidence
-        confidence = abs(float(action)) + 1.0
-    
-    return int(action), confidence
+        action, _ = st.session_state.model.predict(obs, deterministic=True)
+        
+        # Get Q-values for confidence
+        try:
+            obs_tensor = st.session_state.model.policy.obs_to_tensor(obs)[0]
+            q_values = st.session_state.model.q_net(obs_tensor)
+            action_idx = int(action.item() if hasattr(action, 'item') else action)
+            confidence = float(q_values[0, action_idx].detach().numpy())
+        except Exception:
+            confidence = abs(float(action)) + 1.0
+        
+        return int(action), confidence
+    except Exception as e:
+        # Fallback to safe decision
+        return 0, 0.5
 
 
 def generate_sample_traffic():
