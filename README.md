@@ -81,7 +81,33 @@ adaptive-firewall-ai/
 
 ---
 
-## 📚 Three-Stage Workflow
+## �️ GUI Dashboard
+
+Launch the **real-time web dashboard** for visual monitoring and control:
+
+```bash
+streamlit run dashboard.py
+```
+
+The dashboard will open in your browser at `http://localhost:8501` with:
+- 📡 **Live traffic monitoring** with real-time AI decisions
+- 📊 **Interactive analytics** with charts and visualizations
+- 🔍 **Model information** and performance metrics
+- ⚙️ **Configuration controls** and alert thresholds
+- 🚨 **Alert system** for detected threats
+- 📥 **Export reports** in CSV format
+
+**Features:**
+- Real-time packet analysis with AI predictions
+- Visual distinction between ALLOW/BLOCK decisions
+- Traffic pattern visualization
+- Performance metrics (accuracy, false positives/negatives)
+- Model comparison (Original vs Enhanced)
+- Demo mode for testing without live traffic
+
+---
+
+## �📚 Three-Stage Workflow
 
 ### ⚡ STAGE 1: Offline Training (SAFE)
 
